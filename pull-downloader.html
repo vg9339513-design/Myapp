@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PULL – Video downloader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#000;--fg:#fff;--mut:#8a8a8a;--line:#2a2a2a;--soft:#0e0e0e;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.6 "Instrument Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3,.logo{font-family:"Bricolage Grotesque","Instrument Sans",system-ui,sans-serif;margin:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:20px 0;border-bottom:1px solid var(--line)}
+.logo{font-weight:800;font-size:26px;letter-spacing:-.04em;text-decoration:none}
+nav .links{display:flex;gap:24px;font-size:14px;color:var(--mut)}
+nav .links a{text-decoration:none}nav .links a:hover{color:var(--fg)}
+.hero{padding:72px 0 56px}
+h1{font-weight:800;font-size:clamp(46px,11vw,128px);line-height:.92;letter-spacing:-.055em;max-width:11ch}
+.sub{color:var(--mut);max-width:46ch;margin:24px 0 40px;font-size:18px}
+.box{display:flex;border:1px solid var(--fg);background:var(--bg);transition:box-shadow .2s}
+.box:focus-within{box-shadow:6px 6px 0 var(--fg)}
+.box input{flex:1;min-width:0;background:transparent;border:0;color:var(--fg);font:500 18px "Instrument Sans",system-ui,sans-serif;padding:22px 20px}
+.box input:focus{outline:0}
+.box input::placeholder{color:#5c5c5c}
+.btn{background:var(--fg);color:var(--bg);border:0;font:600 16px "Instrument Sans",system-ui,sans-serif;padding:0 32px;cursor:pointer}
+.btn:hover{background:#d4d4d4}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.chip{border:1px solid var(--line);padding:7px 16px;font-size:14px;color:var(--mut);transition:all .2s}
+.chip.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+#res{display:none;margin-top:28px;border:1px solid var(--line);background:var(--soft)}
+#res.show{display:block;animation:in .35s ease}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.top{display:flex;gap:18px;padding:18px;border-bottom:1px solid var(--line);align-items:center}
+.thumb{width:120px;aspect-ratio:16/9;background:repeating-linear-gradient(45deg,#1a1a1a 0 8px,#111 8px 16px);display:grid;place-items:center;flex:none}
+.thumb svg{width:28px;fill:var(--fg)}
+.top b{display:block;font-weight:600}.top span{font-size:14px;color:var(--mut)}
+.fmts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.fmt{background:transparent;color:var(--fg);border:0;border-right:1px solid var(--line);padding:18px;text-align:left;font:inherit;cursor:pointer;transition:all .15s}
+.fmt:last-child{border-right:0}
+.fmt strong{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:22px}
+.fmt small{color:var(--mut)}
+.fmt:hover{background:var(--fg);color:var(--bg)}.fmt:hover small{color:#555}
+.note{padding:12px 18px;font-size:13px;color:var(--mut);border-top:1px solid var(--line)}
+section{padding:72px 0;border-top:1px solid var(--line)}
+h2{font-weight:800;font-size:clamp(32px,6vw,56px);letter-spacing:-.04em;line-height:1;margin-bottom:12px}
+.lead{color:var(--mut);max-width:50ch;margin:0 0 40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.card{padding:28px 24px 32px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transition:all .2s;min-height:190px;display:flex;flex-direction:column}
+.card:hover{background:var(--fg);color:var(--bg)}.card:hover p{color:#444}.card:hover .tag{border-color:var(--bg);color:var(--bg)}
+.card h3{font-size:22px;font-weight:600;letter-spacing:-.02em}
+.card p{color:var(--mut);margin:10px 0 18px;font-size:15px}
+.tag{margin-top:auto;align-self:flex-start;border:1px solid var(--line);padding:2px 10px;font-size:12px;color:var(--mut)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:32px}
+.steps div{border-top:2px solid var(--fg);padding-top:16px}
+.steps b{font:800 40px "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.04em}
+.steps p{color:var(--mut);margin:6px 0 0}
+details{border-bottom:1px solid var(--line);padding:20px 0}
+summary{cursor:pointer;font:600 19px "Bricolage Grotesque",system-ui,sans-serif;list-style:none;display:flex;justify-content:space-between}
+summary::after{content:"+";font-size:24px;line-height:1}details[open] summary::after{content:"–"}
+details p{color:var(--mut);margin:12px 0 0;max-width:62ch}
+footer{border-top:1px solid var(--line);padding:32px 0 48px;color:var(--mut);font-size:14px;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--fg);color:var(--bg);padding:12px 22px;font-weight:500;opacity:0;pointer-events:none;transition:all .25s;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:600px){nav .links{display:none}.box{flex-direction:column}.btn{padding:18px}.top{flex-direction:column;align-items:flex-start}.hero{padding-top:48px}.fmt{border-right:0;border-bottom:1px solid var(--line)}}
+.tabs{display:flex;flex-wrap:wrap;border:1px solid var(--line);width:fit-content;max-width:100%}
+.tab{background:transparent;color:var(--mut);border:0;padding:12px 20px;font:500 15px "Instrument Sans",system-ui,sans-serif;cursor:pointer}
+.tab.on{background:var(--fg);color:var(--bg)}
+.pn{display:none;margin-top:24px}.pn.on{display:block}
+.drop{display:block;border:1px dashed #555;padding:40px 20px;text-align:center;cursor:pointer;color:var(--mut)}
+.drop:hover{border-color:var(--fg);color:var(--fg)}
+.out{margin-top:20px;display:grid;gap:12px;color:var(--mut)}
+.out img,.out audio,#v2{max-width:100%;width:100%}
+#v2{max-height:360px;background:#000;margin-top:16px}
+.sm{padding:14px 24px;margin-top:12px}
+.dl{display:inline-block;background:var(--fg);color:var(--bg);padding:12px 22px;text-decoration:none;font-weight:600;justify-self:start}
+.rng{display:flex;gap:12px;align-items:center;margin-top:16px;color:var(--mut)}.rng input{flex:1}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav><a class="logo" href="#">PULL</a><div class="links"><a href="#tools">Tools</a><a href="#how">How it works</a><a href="#faq">FAQ</a></div></nav>
+
+<header class="hero">
+<h1>Paste a link. Take the video.</h1>
+<p class="sub">One clean tool for YouTube, TikTok, Instagram, Facebook and Pinterest videos. No clutter, no sign-up.</p>
+<div class="box">
+<input id="url" type="url" inputmode="url" autocomplete="off" placeholder="Paste a video link here" aria-label="Video link">
+<button class="btn" id="go">Get video</button>
+</div>
+<div class="chips" id="chips">
+<span class="chip" data-p="youtube">YouTube</span><span class="chip" data-p="tiktok">TikTok</span><span class="chip" data-p="instagram">Instagram</span><span class="chip" data-p="facebook">Facebook</span><span class="chip" data-p="pinterest">Pinterest</span><span class="chip" data-p="x">X</span><span class="chip" data-p="more">and more</span>
+</div>
+<div id="res" aria-live="polite">
+<div class="top"><div class="thumb"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div><div><b id="rt">Video found</b><span id="rs"></span></div></div>
+<div class="fmts">
+<button class="fmt" data-f="MP4 1080p"><strong>MP4</strong><small>1080p · Best quality</small></button>
+<button class="fmt" data-f="MP4 720p"><strong>MP4</strong><small>720p · Balanced</small></button>
+<button class="fmt" data-f="MP3"><strong>MP3</strong><small>Audio only</small></button>
+<button class="fmt" data-f="Thumbnail"><strong>JPG</strong><small>Thumbnail</small></button>
+</div>
+<div class="note">Downloads are off until a backend is connected (API_URL in the script).</div>
+</div>
+</header>
+
+<section id="tools">
+<h2>More than a downloader</h2>
+<p class="lead">A growing set of small tools, all in the same place.</p>
+<div class="grid">
+<div class="card"><h3>Video downloader</h3><p>Save videos from YouTube, TikTok, Instagram and Facebook.</p><span class="tag">Needs backend</span></div>
+<div class="card"><h3>Audio extractor</h3><p>Pull the audio out of a video file as WAV.</p><span class="tag">Live</span></div>
+<div class="card"><h3>Frame grabber</h3><p>Save any frame of a video as a full size JPG.</p><span class="tag">Live</span></div>
+<div class="card"><h3>Image compressor</h3><p>Shrink photos and covers with a quality slider.</p><span class="tag">Live</span></div>
+<div class="card"><h3>Video to GIF</h3><p>Turn a short clip into a looping GIF.</p><span class="tag">Soon</span></div>
+<div class="card"><h3>Video compressor</h3><p>Shrink file size without visible quality loss.</p><span class="tag">Soon</span></div>
+</div>
+</section>
+
+<section id="bench">
+<h2>Try the tools</h2>
+<p class="lead">These run inside your browser. Your files never leave your device.</p>
+<div class="tabs" role="tablist"><button class="tab on" data-t="p1">Audio extractor</button><button class="tab" data-t="p2">Frame grabber</button><button class="tab" data-t="p3">Image compressor</button></div>
+<div class="pn on" id="p1"><label class="drop">Choose a video or audio file<input type="file" id="f1" accept="video/*,audio/*" hidden></label><div class="out" id="o1"></div></div>
+<div class="pn" id="p2"><label class="drop">Choose a video file<input type="file" id="f2" accept="video/*" hidden></label><video id="v2" controls playsinline hidden></video><button class="btn sm" id="g2" hidden>Grab this frame</button><div class="out" id="o2"></div></div>
+<div class="pn" id="p3"><label class="drop">Choose an image<input type="file" id="f3" accept="image/*" hidden></label><label class="rng">Quality <input type="range" id="q3" min="30" max="95" value="70"><span id="qv">70</span></label><div class="out" id="o3"></div></div>
+</section>
+
+<section id="how">
+<h2>Three steps</h2>
+<p class="lead">It takes about ten seconds.</p>
+<div class="steps">
+<div><b>1</b><p>Copy the link from the app or browser.</p></div>
+<div><b>2</b><p>Paste it above and press Get video.</p></div>
+<div><b>3</b><p>Pick a format and save the file.</p></div>
+</div>
+</section>
+
+<section id="faq">
+<h2>Questions</h2>
+<p class="lead">Short answers.</p>
+<details><summary>Which sites work?</summary><p>YouTube, TikTok, Instagram, Facebook, Pinterest and X. More platforms are added over time.</p></details>
+<details><summary>Is it free?</summary><p>Yes. Downloads are free with no account.</p></details>
+<details><summary>Can I download any video?</summary><p>Only download content you own or have permission to use. Respect each platform’s terms and the creator’s copyright.</p></details>
+<details><summary>Where do files go?</summary><p>They save to your device’s downloads folder, like any other file.</p></details>
+</section>
+
+<footer><span>PULL · Video tools</span><span>Download only what you have the right to use.</span></footer>
+</div>
+<div id="toast" role="status"></div>
+<script>
+(function(){
+var API_URL=""; // add your backend endpoint here
+var $=function(i){return document.getElementById(i)};
+var map={youtube:/(youtube\.com|youtu\.be)/i,tiktok:/tiktok\.com/i,instagram:/instagram\.com/i,facebook:/(facebook\.com|fb\.watch)/i,x:/(twitter\.com|x\.com)/i,pinterest:/(pinterest\.[a-z.]+|pin\.it)/i};
+var names={youtube:"YouTube",tiktok:"TikTok",instagram:"Instagram",facebook:"Facebook",x:"X",pinterest:"Pinterest"};
+var chips=[].slice.call(document.querySelectorAll(".chip"));
+function detect(v){for(var k in map){if(map[k].test(v))return k}return null}
+function mark(p){chips.forEach(function(c){c.classList.toggle("on",c.dataset.p===p)})}
+function toast(m){var t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(function(){t.classList.remove("show")},2600)}
+$("url").addEventListener("input",function(){mark(detect(this.value.trim()))});
+function run(){
+var v=$("url").value.trim();
+if(!/^https?:\/\/\S+\.\S+/.test(v)){toast("Paste a full link that starts with https://");$("url").focus();return}
+var p=detect(v);mark(p);
+$("rt").textContent=p?names[p]+" link detected":"Link detected";
+$("rs").textContent=v.length>52?v.slice(0,52)+"…":v;
+$("res").classList.add("show");
+if(API_URL){fetch(API_URL+"/api/info?url="+encodeURIComponent(v)).then(function(r){return r.json()}).then(function(d){if(d.title)$("rt").textContent=d.title}).catch(function(){})}
+}
+$("go").addEventListener("click",run);
+$("url").addEventListener("keydown",function(e){if(e.key==="Enter")run()});
+[].slice.call(document.querySelectorAll(".fmt")).forEach(function(b){
+b.addEventListener("click",function(){
+if(!API_URL){toast("Demo mode: connect a download API to save "+b.dataset.f);return}
+var a=document.createElement("a");a.href=API_URL+"/api/download?url="+encodeURIComponent($("url").value.trim())+"&format="+encodeURIComponent(b.dataset.f);document.body.appendChild(a);a.click();a.remove();toast("Preparing "+b.dataset.f+"…");
+});
+});
+var tabs=[].slice.call(document.querySelectorAll(".tab"));
+tabs.forEach(function(t){t.addEventListener("click",function(){tabs.forEach(function(x){x.classList.toggle("on",x===t)});[].slice.call(document.querySelectorAll(".pn")).forEach(function(p){p.classList.toggle("on",p.id===t.dataset.t)})})});
+function link(b,name,label){var a=document.createElement("a");a.className="dl";a.href=URL.createObjectURL(b);a.download=name;a.textContent=label+" · "+(b.size/1048576).toFixed(2)+" MB";return a}
+function wav(buf){var ch=Math.min(buf.numberOfChannels,2),n=buf.length,o=new DataView(new ArrayBuffer(44+n*ch*2)),d=[],i,j,p=44,v;
+function s(q,t){for(var k=0;k<t.length;k++)o.setUint8(q+k,t.charCodeAt(k))}
+s(0,"RIFF");o.setUint32(4,36+n*ch*2,true);s(8,"WAVEfmt ");o.setUint32(16,16,true);o.setUint16(20,1,true);o.setUint16(22,ch,true);o.setUint32(24,buf.sampleRate,true);o.setUint32(28,buf.sampleRate*ch*2,true);o.setUint16(32,ch*2,true);o.setUint16(34,16,true);s(36,"data");o.setUint32(40,n*ch*2,true);
+for(j=0;j<ch;j++)d.push(buf.getChannelData(j));
+for(i=0;i<n;i++)for(j=0;j<ch;j++){v=Math.max(-1,Math.min(1,d[j][i]));o.setInt16(p,v<0?v*32768:v*32767,true);p+=2}
+return new Blob([o],{type:"audio/wav"})}
+$("f1").addEventListener("change",function(){var f=this.files[0],o=$("o1");if(!f)return;o.textContent="Extracting audio…";var AC=window.AudioContext||window.webkitAudioContext;
+f.arrayBuffer().then(function(ab){return new AC().decodeAudioData(ab)}).then(function(buf){var b=wav(buf),au=document.createElement("audio");au.controls=true;au.src=URL.createObjectURL(b);o.textContent="";o.appendChild(au);o.appendChild(link(b,f.name.replace(/\.[^.]+$/,"")+".wav","Save WAV"))}).catch(function(){o.textContent="This file could not be read. Try an MP4 or WebM under 300 MB."})});
+$("f2").addEventListener("change",function(){var f=this.files[0];if(!f)return;var v=$("v2");v.src=URL.createObjectURL(f);v.hidden=false;$("g2").hidden=false;$("o2").textContent=""});
+$("g2").addEventListener("click",function(){var v=$("v2");if(!v.videoWidth){toast("Wait for the video to load");return}var c=document.createElement("canvas");c.width=v.videoWidth;c.height=v.videoHeight;c.getContext("2d").drawImage(v,0,0);c.toBlob(function(b){var im=new Image(),o=$("o2");im.src=URL.createObjectURL(b);o.textContent="";o.appendChild(im);o.appendChild(link(b,"frame.jpg","Save JPG"))},"image/jpeg",.92)});
+function comp(){var f=$("f3").files[0];if(!f)return;var im=new Image();im.onload=function(){var c=document.createElement("canvas"),x=c.getContext("2d");c.width=im.naturalWidth;c.height=im.naturalHeight;x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);c.toBlob(function(b){var o=$("o3"),p=new Image(),t=document.createElement("span");p.src=URL.createObjectURL(b);t.textContent=(f.size/1024).toFixed(0)+" KB → "+(b.size/1024).toFixed(0)+" KB";o.textContent="";o.appendChild(p);o.appendChild(t);o.appendChild(link(b,"compressed.jpg","Save JPG"))},"image/jpeg",$("q3").value/100)};im.src=URL.createObjectURL(f)}
+$("f3").addEventListener("change",comp);$("q3").addEventListener("input",function(){$("qv").textContent=this.value});$("q3").addEventListener("change",comp);
+})();
+</script>
+</body>
+</html>
